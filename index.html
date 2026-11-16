@@ -1,16 +1,384 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.sound.min.js"></script>
-    <script src="Board.js"></script>
-    <script src="tools.js"></script>
-    <script src="UI.js"></script>
-    <script src="sketch.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <meta charset="utf-8" />
-		<style>body {padding: 6; margin: 0;}</style>
-    
-  </head>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+  <title>
+   Chess Engine
+  </title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&amp;display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <main>
+   <section class="bw">
+    <div class="clk" id="ctop">
+     <span id="ntop">
+     </span>
+     <b id="ttop">
+     </b>
+    </div>
+    <div class="bwr">
+     <div aria-label="Chess board" class="bd" id="bd" role="grid">
+     </div>
+     <div hidden="" id="pr">
+     </div>
+    </div>
+    <div class="clk" id="cbot">
+     <span id="nbot">
+     </span>
+     <b id="tbot">
+     </b>
+    </div>
+    <button id="fl" title="Flip the board to the other side">
+     Swap view
+    </button>
+   </section>
+   <aside class="pn">
+    <div class="pc">
+     <h1>
+      Chess engine
+     </h1>
+     <label>
+      Game mode
+      <select id="mode">
+       <option value="hh">
+        Human vs human
+       </option>
+       <option selected="" value="hc">
+        Human vs computer
+       </option>
+       <option value="cc">
+        Computer vs computer
+       </option>
+       <option value="ed">
+        Blank board editor
+       </option>
+      </select>
+     </label>
+     <label id="lside">
+      Your pieces
+      <select id="side">
+       <option value="w">
+        White
+       </option>
+       <option value="b">
+        Black
+       </option>
+       <option value="r">
+        Random
+       </option>
+      </select>
+     </label>
+     <label id="llv">
+      Computer strength
+      <select id="lv">
+       <option value="1">
+        Easy
+       </option>
+       <option value="2">
+        Medium
+       </option>
+       <option selected="" value="3">
+        Hard (under 1 s per move)
+       </option>
+       <option value="4">
+        Expert (about 2 s per move)
+       </option>
+       <option value="5">
+        Master (about 3 s per move)
+       </option>
+       <option value="6">
+        Grandmaster (about 7 s per move)
+       </option>
+       <option value="7">
+        Stockfish 2500+ (loads online, about 0.5 s per move)
+       </option>
+       <option value="8">
+        Stockfish 2800+ (fast: up to 0.6 s per move)
+       </option>
+       <option value="9">
+        Stockfish Max (fast: up to 1.2 s per move)
+       </option>
+      </select>
+     </label>
+     <label>
+      Clock per player
+      <select id="time">
+       <option value="0">
+        Infinite time (no clock)
+       </option>
+       <option value="1">
+        1 minute (bullet)
+       </option>
+       <option value="2">
+        2 minutes (bullet)
+       </option>
+       <option value="3">
+        3 minutes
+       </option>
+       <option value="5">
+        5 minutes
+       </option>
+       <option selected="" value="10">
+        10 minutes
+       </option>
+       <option value="30">
+        30 minutes
+       </option>
+      </select>
+     </label>
+     <label style="flex-direction:row;align-items:center;gap:8px;color:var(--tx)">
+      <input id="inf" type="checkbox"/>
+      Infinite time (no clock). Can be toggled during a game
+     </label>
+     <label>
+      Increment per move
+      <select id="inc">
+       <option value="0">
+        None
+       </option>
+       <option value="1">
+        1 second
+       </option>
+       <option value="2">
+        2 seconds
+       </option>
+       <option value="3">
+        3 seconds
+       </option>
+       <option value="5">
+        5 seconds
+       </option>
+      </select>
+     </label>
+     <div class="row" id="lpos" style="align-items:flex-end">
+      <label style="flex:1">
+       Starting position
+       <select id="pos">
+        <option value="std">
+         Standard
+        </option>
+       </select>
+      </label>
+      <button id="dpos" title="Delete the selected custom board">
+       Delete
+      </button>
+     </div>
+     <div hidden="" id="ed" style="display:flex;flex-direction:column;gap:10px">
+      <div class="pal row" id="pal">
+      </div>
+      <label>
+       Side to move
+       <select id="etm">
+        <option value="w">
+         White
+        </option>
+        <option value="b">
+         Black
+        </option>
+       </select>
+      </label>
+      <label>
+       Board name
+       <input id="enm" maxlength="40" placeholder="My endgame puzzle"/>
+      </label>
+      <div class="row">
+       <button id="ecl">
+        Clear board
+       </button>
+       <button id="est">
+        Standard setup
+       </button>
+      </div>
+      <div class="row">
+       <button class="pri" id="esv">
+        Save custom board
+       </button>
+       <button id="edn">
+        Done
+       </button>
+      </div>
+     </div>
+     <div class="row" id="gr">
+      <button class="pri" id="go">
+       Start
+      </button>
+      <button id="rs">
+       Reset
+      </button>
+      <button id="rv" title="Take back the last move">
+       Revert move
+      </button>
+      <button id="sv">
+       Save replay
+      </button>
+     </div>
+     <div hidden="" id="cc">
+      <label>
+       Speed (slow to fast)
+       <input id="spd" max="100" min="1" type="range" value="60"/>
+      </label>
+      <div class="row" style="margin-top:8px">
+       <button id="bk">
+        Back one move
+       </button>
+       <button hidden="" id="fw">
+        Forward one move
+       </button>
+       <button id="pz">
+        Stop
+       </button>
+      </div>
+     </div>
+     <p id="st" role="status">
+     </p>
+     <p id="nt">
+     </p>
+     <ol id="ml">
+     </ol>
+    </div>
+    <div class="pc">
+     <div class="row">
+      <label style="flex:1">
+       Piece style
+       <select id="ps">
+        <option value="c">
+         Classic
+        </option>
+        <option value="t">
+         Traditional
+        </option>
+        <option value="b">
+         Bold outline
+        </option>
+        <option value="d">
+         Letter discs
+        </option>
+       </select>
+      </label>
+      <label style="flex:1">
+       Board theme
+       <select id="bt">
+        <option value="sage">
+         Sage
+        </option>
+        <option value="walnut">
+         Walnut
+        </option>
+        <option value="tournament">
+         Tournament
+        </option>
+        <option value="ocean">
+         Ocean
+        </option>
+        <option value="rose">
+         Rose
+        </option>
+        <option value="night">
+         Night
+        </option>
+        <option value="ice">
+         Ice
+        </option>
+        <option value="lavender">
+         Lavender
+        </option>
+        <option value="coffee">
+         Coffee
+        </option>
+        <option value="forest">
+         Forest
+        </option>
+        <option value="sand">
+         Sand
+        </option>
+        <option value="crimson">
+         Crimson
+        </option>
+        <option value="graphite">
+         Graphite
+        </option>
+        <option value="mint">
+         Mint
+        </option>
+        <option value="gold">
+         Gold
+        </option>
+        <option value="marble">
+         Marble
+        </option>
+       </select>
+      </label>
+     </div>
+     <label>
+      Board view
+      <select id="vw">
+       <option value="0">
+        Flat (2D)
+       </option>
+       <option value="30">
+        3D, low tilt
+       </option>
+       <option value="45">
+        3D, medium tilt
+       </option>
+       <option value="60">
+        3D, high tilt
+       </option>
+      </select>
+     </label>
+     <div class="row" style="align-items:flex-end">
+      <button aria-pressed="false" id="mu">
+       Mute
+      </button>
+      <label style="flex:1">
+       Volume
+       <input id="vol" max="100" min="0" type="range" value="60"/>
+      </label>
+     </div>
+     <label>
+      Opening demonstrations
+      <select id="od">
+      </select>
+     </label>
+     <div class="row">
+      <button id="odw">
+       Watch opening
+      </button>
+      <button id="odp" title="Continue as a game against the computer from the current demo position">
+       Play on from here
+      </button>
+     </div>
+     <p id="odd" style="margin:0;font-size:13px;color:var(--mu)">
+     </p>
+     <label>
+      Upload PGN file (pro games)
+      <input accept=".pgn,.txt,text/plain" id="pgn" type="file"/>
+     </label>
+     <label>
+      Games in file
+      <select id="pg">
+       <option disabled="" selected="">
+        No file loaded
+       </option>
+      </select>
+     </label>
+     <button id="wp">
+      Watch PGN game
+     </button>
+     <label>
+      Saved replays
+      <select id="rp">
+      </select>
+     </label>
+     <button id="ld">
+      Watch replay
+     </button>
+    </div>
+   </aside>
+  </main>
+  <script defer="" src="script.js">
+  </script>
+ </body>
 </html>
